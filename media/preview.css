@@ -1,0 +1,208 @@
+/* Apercu de l'examen : couleurs du theme de VS Code (variables --vscode-*). */
+body {
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  padding: 0 16px 24px;
+  line-height: 1.45;
+}
+
+h1 {
+  font-size: 1.1em;
+  margin: 0;
+}
+
+h2 {
+  font-size: 1em;
+  margin: 0 0 8px;
+}
+
+.summary {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  background: var(--vscode-editor-background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  margin-bottom: 12px;
+}
+
+.hint {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.92em;
+  margin: 4px 0;
+}
+
+.status.error,
+.invalid-note {
+  color: var(--vscode-errorForeground);
+}
+
+.question {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.question.invalid {
+  border-color: var(--vscode-inputValidation-errorBorder, var(--vscode-errorForeground));
+}
+
+.question header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.points {
+  margin-left: auto;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.92em;
+}
+
+.badge {
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 0.85em;
+}
+
+.label {
+  margin: 6px 0;
+  white-space: pre-wrap;
+}
+
+button.link,
+button.problem {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--vscode-textLink-foreground);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+button.link {
+  font-weight: 600;
+}
+
+button.link:hover,
+button.problem:hover {
+  text-decoration: underline;
+}
+
+.choices,
+.tests,
+.zones,
+.problems ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0;
+}
+
+.choices li {
+  padding: 2px 0;
+}
+
+.mark {
+  display: inline-block;
+  width: 1.2em;
+}
+
+.correct {
+  color: var(--vscode-testing-iconPassed, #3c9a5f);
+  font-weight: 600;
+}
+
+.parts-text {
+  white-space: pre-wrap;
+}
+
+.blank,
+.tag {
+  display: inline-block;
+  border: 1px solid var(--vscode-testing-iconPassed, #3c9a5f);
+  border-radius: 4px;
+  padding: 0 6px;
+  margin: 1px 0;
+}
+
+.blank {
+  color: var(--vscode-testing-iconPassed, #3c9a5f);
+  font-weight: 600;
+}
+
+.tag {
+  border-color: var(--vscode-panel-border);
+}
+
+.grid {
+  border-collapse: collapse;
+  margin: 4px 0;
+}
+
+.grid th,
+.grid td {
+  border: 1px solid var(--vscode-panel-border);
+  padding: 3px 8px;
+  text-align: center;
+}
+
+.grid th[scope="row"] {
+  text-align: left;
+  font-weight: normal;
+}
+
+pre {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 4px 0;
+}
+
+code {
+  font-family: var(--vscode-editor-font-family);
+}
+
+.problems {
+  margin-top: 16px;
+  border-top: 1px solid var(--vscode-panel-border);
+  padding-top: 12px;
+}
+
+.problems li {
+  padding: 2px 0;
+}
+
+.kind {
+  font-weight: 600;
+}
+
+.problem.error .kind {
+  color: var(--vscode-errorForeground);
+}
+
+.problem.warning .kind {
+  color: var(--vscode-editorWarning-foreground);
+}
+
+.problem.info .kind {
+  color: var(--vscode-editorInfo-foreground);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

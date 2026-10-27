@@ -1,0 +1,14 @@
+{
+  // F5 : ouvre une nouvelle fenetre de VS Code avec l'extension chargee.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Lancer l'extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}", "${workspaceFolder}/examples"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "npm: build"
+    }
+  ]
+}

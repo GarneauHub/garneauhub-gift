@@ -1,0 +1,11 @@
+# Le paquet .vsix ne contient que dist/, syntaxes/, media/ et les fichiers de description.
+.vscode/**
+src/**
+tests/**
+scripts/**
+examples/**
+node_modules/**
+esbuild.mjs
+vitest.config.mjs
+**/*.map
+.gitignore

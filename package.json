@@ -1,0 +1,124 @@
+{
+  "name": "garneauhub-giftformat",
+  "displayName": "GarneauHub GIFT",
+  "description": "Format GIFT de GarneauHub : coloration, modèles de questions, erreurs soulignées et aperçu de l'examen, comme l'éditeur GIFT du site.",
+  "version": "0.1.0",
+  "publisher": "garneauhub",
+  "license": "UNLICENSED",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GarneauHub/GarneauHub.git",
+    "directory": "garneauhub-giftformat"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Linters"
+  ],
+  "keywords": [
+    "gift",
+    "moodle",
+    "garneauhub",
+    "examen",
+    "quiz"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "gift",
+        "aliases": [
+          "GIFT (GarneauHub)",
+          "gift"
+        ],
+        "extensions": [
+          ".gift"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "gift",
+        "scopeName": "text.gift",
+        "path": "./syntaxes/gift.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.python": "python",
+          "meta.embedded.block.javascript": "javascript",
+          "meta.embedded.block.typescript": "typescript",
+          "meta.embedded.block.shellscript": "shellscript",
+          "meta.embedded.block.csharp": "csharp",
+          "meta.embedded.block.c": "c",
+          "meta.embedded.block.cpp": "cpp",
+          "meta.embedded.block.java": "java",
+          "meta.embedded.block.php": "php",
+          "meta.embedded.block.sql": "sql"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "garneauhubGift.showPreview",
+        "title": "Ouvrir l'aperçu de l'examen",
+        "category": "GarneauHub GIFT",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "garneauhubGift.insertQuestion",
+        "title": "Ajouter une question",
+        "category": "GarneauHub GIFT",
+        "icon": "$(add)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "garneauhubGift.showPreview",
+          "when": "editorLangId == gift",
+          "group": "navigation"
+        },
+        {
+          "command": "garneauhubGift.insertQuestion",
+          "when": "editorLangId == gift",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "garneauhubGift.showPreview",
+          "when": "editorLangId == gift"
+        },
+        {
+          "command": "garneauhubGift.insertQuestion",
+          "when": "editorLangId == gift"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "garneauhubGift.showPreview",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorLangId == gift"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node scripts/grammar.mjs && node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "test": "vitest run",
+    "package": "vsce package --no-dependencies --skip-license",
+    "vscode:prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "gift-parser-ide": "^0.2.6",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.0",
+    "vitest": "^5.0.0"
+  }
+}

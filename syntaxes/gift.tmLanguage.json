@@ -1,0 +1,502 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "GIFT (GarneauHub)",
+  "scopeName": "text.gift",
+  "comment": "Fichier genere par scripts/grammar.mjs : modifier le script, pas ce fichier.",
+  "patterns": [
+    {
+      "include": "#directive"
+    },
+    {
+      "include": "#fences"
+    },
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#category"
+    },
+    {
+      "include": "#title"
+    },
+    {
+      "include": "#format"
+    },
+    {
+      "include": "#escape"
+    },
+    {
+      "include": "#drag-blank"
+    },
+    {
+      "include": "#answers"
+    }
+  ],
+  "repository": {
+    "directive": {
+      "patterns": [
+        {
+          "name": "meta.directive.gift",
+          "match": "^\\s*(//) ?((?i:points?|code|test|solution|starter|type|notation|colonnes|image|zone|[ée]nonc[ée]))((?:[ \\t]+[^\\s:=]+)?)[ \\t]*([:=])(.*)$",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.comment.gift"
+            },
+            "2": {
+              "name": "keyword.control.directive.gift"
+            },
+            "3": {
+              "name": "variable.parameter.directive.gift"
+            },
+            "4": {
+              "name": "punctuation.separator.directive.gift"
+            },
+            "5": {
+              "name": "string.unquoted.directive.gift"
+            }
+          }
+        },
+        {
+          "name": "meta.directive.gift",
+          "match": "^\\s*(//) ?(=>)(.*)$",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.comment.gift"
+            },
+            "2": {
+              "name": "keyword.control.directive.gift"
+            },
+            "3": {
+              "name": "string.unquoted.directive.gift"
+            }
+          }
+        }
+      ]
+    },
+    "fences": {
+      "patterns": [
+        {
+          "name": "markup.fenced_code.block.python.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:python|python3|py))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.python",
+              "patterns": [
+                {
+                  "include": "source.python"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.javascript.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:javascript|js|nodejs|node))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.javascript",
+              "patterns": [
+                {
+                  "include": "source.js"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.typescript.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:typescript|ts))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.typescript",
+              "patterns": [
+                {
+                  "include": "source.ts"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.shellscript.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:bash|sh|shell))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.shellscript",
+              "patterns": [
+                {
+                  "include": "source.shell"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.csharp.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:csharp|cs|c#))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.csharp",
+              "patterns": [
+                {
+                  "include": "source.cs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.c.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:c))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.c",
+              "patterns": [
+                {
+                  "include": "source.c"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.cpp.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:cpp|c\\+\\+))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.cpp",
+              "patterns": [
+                {
+                  "include": "source.cpp"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.java.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:java))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.java",
+              "patterns": [
+                {
+                  "include": "source.java"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.php.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:php))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.php",
+              "patterns": [
+                {
+                  "include": "source.php"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.sql.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})\\s*((?i:sql))\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "(^|\\G)(\\s*)(.*)",
+              "while": "(^|\\G)(?!\\s*([\\x60~]{3,})\\s*$)",
+              "contentName": "meta.embedded.block.sql",
+              "patterns": [
+                {
+                  "include": "source.sql"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markup.fenced_code.block.gift",
+          "begin": "^\\s*(\\x60{3,}|~{3,})([^\\x60]*)$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            },
+            "2": {
+              "name": "fenced_code.block.language.gift"
+            }
+          },
+          "end": "^\\s*(\\1[\\x60~]*)\\s*$",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.fence.gift"
+            }
+          },
+          "contentName": "markup.raw.block.gift"
+        }
+      ]
+    },
+    "comment": {
+      "name": "comment.line.double-slash.gift",
+      "match": "^\\s*//.*$"
+    },
+    "category": {
+      "name": "comment.line.category.gift",
+      "match": "^\\s*\\$(?i:CATEGORY)\\s*:.*$"
+    },
+    "title": {
+      "name": "entity.name.section.title.gift",
+      "match": "(::)(.*?)(::)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.title.gift"
+        },
+        "3": {
+          "name": "punctuation.definition.title.gift"
+        }
+      }
+    },
+    "format": {
+      "name": "storage.type.format.gift",
+      "match": "\\[(?:html|markdown|plain|moodle)\\]"
+    },
+    "escape": {
+      "name": "constant.character.escape.gift",
+      "match": "\\\\."
+    },
+    "drag-blank": {
+      "name": "meta.blank.gift",
+      "match": "(\\[\\[)(.*?)(\\]\\])",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.blank.gift"
+        },
+        "2": {
+          "name": "string.other.blank.gift"
+        },
+        "3": {
+          "name": "punctuation.definition.blank.gift"
+        }
+      }
+    },
+    "answers": {
+      "name": "meta.answers.gift",
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.answers.begin.gift"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.answers.end.gift"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#escape"
+        },
+        {
+          "name": "storage.type.cloze.gift",
+          "match": ":(?i:SA|MC):"
+        },
+        {
+          "name": "punctuation.separator.alternative.gift",
+          "match": "\\|"
+        },
+        {
+          "name": "keyword.operator.match.gift",
+          "match": "->"
+        },
+        {
+          "name": "constant.language.boolean.gift",
+          "match": "\\b(?i:T|TRUE|F|FALSE)\\b(?=\\s*[#}])"
+        },
+        {
+          "name": "keyword.operator.correct.gift",
+          "match": "="
+        },
+        {
+          "name": "keyword.operator.wrong.gift",
+          "match": "~"
+        },
+        {
+          "name": "constant.numeric.weight.gift",
+          "match": "%-?\\d+(?:[.,]\\d+)?%"
+        },
+        {
+          "name": "comment.block.feedback.gift",
+          "match": "#[^=~}\\\\]*"
+        },
+        {
+          "name": "string.unquoted.answer.gift",
+          "match": "[^\\\\{}=~#%|\\-]+|-"
+        }
+      ]
+    }
+  }
+}
