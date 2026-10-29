@@ -1,0 +1,48 @@
+// Exemple : une question de chaque type. Les questions sont separees par une
+// ligne vide ; « // points: » se met juste avant la question (1 point par defaut).
+// Syntaxe complete : documentation/editeur-gift/README.md
+
+// points: 2
+::Réseau 1:: Quel protocole est orienté connexion ? {
+	=TCP
+	~UDP
+	~ICMP
+}
+
+La Terre est ronde. {T}
+
+// points: 2
+Quelle commande affiche la configuration IP sous Windows ? {=ipconfig}
+
+// points: 5
+// code: python3
+// solution:
+//   def somme(a, b):
+//       return a + b
+// test: print(somme(2, 3)) => 5
+// test:
+//   total = somme(1, 1)
+//   print(total)
+// => 2
+Écrivez une fonction somme(a, b) qui retourne la somme de a et b. {}
+
+// points: 3
+// énoncé: Complétez avec les notions du cours 3.
+La couche 1 du modèle OSI est la couche {:SA: Physique}.
+Le protocole {:MC: =TCP ~UDP ~ICMP} est orienté connexion.
+La boucle locale est {:SA: 127.0.0.1 | localhost}.
+
+// points: 3
+// type: grille
+// colonnes: Physique | Liaison | Réseau | Transport
+À quelle couche appartient chaque élément ? {
+	=Routeur -> Réseau
+	=Commutateur -> Liaison
+	=TCP -> Transport
+}
+
+// points: 2
+// type: glisser-texte
+// énoncé: Placez les étiquettes dans le texte.
+Le modèle OSI compte [[7]] couches ; TCP est dans la couche [[Transport]]. {~Réseau ~5}
+

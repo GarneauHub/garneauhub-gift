@@ -1,11 +1,12 @@
 // Extension VS Code « GarneauHub GIFT » : le format GIFT de l'editeur du site
 // dans VS Code. La coloration est dans syntaxes/ (grammaire TextMate) ; ce
-// fichier ajoute les erreurs soulignees, les modeles de questions et
-// l'apercu de l'examen.
+// fichier ajoute les erreurs soulignees, les modeles de questions, la
+// structure (vue « Structure », repli, barre d'etat) et l'apercu de l'examen.
 import * as vscode from "vscode";
 import { GIFT_SEVERITY, parseGift } from "./gift.js";
 import { GIFT_TRIGGER_CHARACTERS, INSERTABLE_SNIPPETS, getGiftCompletions, separatorBefore } from "./completions.js";
 import { renderPreview } from "./previewHtml.js";
+import { foldingRanges, questionOutline, statusSummary } from "./outline.js";
 
 const LANGUAGE_ID = "gift";
 // Delai apres la derniere frappe avant de relire le document (ms).
@@ -19,6 +20,18 @@ const SEVERITIES = {
 
 const isGift = (document) => document?.languageId === LANGUAGE_ID;
 
+// Derniere lecture de chaque document, par version : la structure, le repli
+// et la barre d'etat la reutilisent au lieu de relire le texte.
+const parseCache = new Map();
+const getParsed = (document) => {
+  const key = document.uri.toString();
+  const cached = parseCache.get(key);
+  if (cached?.version === document.version) return cached.parsed;
+  const parsed = parseGift(document.getText());
+  parseCache.set(key, { version: document.version, parsed });
+  return parsed;
+};
+
 // Lignes et colonnes de parseGift : a partir de 1, fin exclue (comme Monaco).
 const toRange = (diagnostic) => new vscode.Range(
   diagnostic.startLine - 1, diagnostic.startColumn - 1, diagnostic.endLine - 1, diagnostic.endColumn - 1
@@ -28,17 +41,19 @@ export function activate(context) {
   const diagnostics = vscode.languages.createDiagnosticCollection(LANGUAGE_ID);
   const timers = new Map();
   const preview = createPreview(context);
+  const status = createStatusBar();
 
   // Une lecture par modification : elle sert aux erreurs et a l'apercu.
   const update = (document) => {
     if (!isGift(document)) return;
-    const parsed = parseGift(document.getText());
+    const parsed = getParsed(document);
     diagnostics.set(document.uri, parsed.diagnostics.map((diagnostic) => {
       const item = new vscode.Diagnostic(toRange(diagnostic), diagnostic.message, SEVERITIES[diagnostic.severity]);
       item.source = "GIFT";
       return item;
     }));
     preview.refresh(document, parsed);
+    if (vscode.window.activeTextEditor?.document === document) status.show(parsed);
   };
 
   const scheduleUpdate = (document) => {
@@ -53,13 +68,25 @@ export function activate(context) {
 
   context.subscriptions.push(
     diagnostics,
+    status.item,
     vscode.workspace.onDidOpenTextDocument(update),
     vscode.workspace.onDidChangeTextDocument((event) => scheduleUpdate(event.document)),
-    vscode.workspace.onDidCloseTextDocument((document) => diagnostics.delete(document.uri)),
+    vscode.workspace.onDidCloseTextDocument((document) => {
+      diagnostics.delete(document.uri);
+      parseCache.delete(document.uri.toString());
+    }),
     // L'apercu suit le fichier GIFT actif, comme l'apercu Markdown.
     vscode.window.onDidChangeActiveTextEditor((editor) => {
-      if (isGift(editor?.document)) preview.follow(editor.document, parseGift(editor.document.getText()));
+      if (!isGift(editor?.document)) {
+        status.hide();
+        return;
+      }
+      const parsed = getParsed(editor.document);
+      preview.follow(editor.document, parsed);
+      status.show(parsed);
     }),
+    vscode.languages.registerDocumentSymbolProvider(LANGUAGE_ID, { provideDocumentSymbols }),
+    vscode.languages.registerFoldingRangeProvider(LANGUAGE_ID, { provideFoldingRanges }),
     vscode.languages.registerCompletionItemProvider(LANGUAGE_ID, { provideCompletionItems }, ...GIFT_TRIGGER_CHARACTERS),
     vscode.commands.registerCommand("garneauhubGift.insertQuestion", insertQuestion),
     vscode.commands.registerCommand("garneauhubGift.showPreview", () => {
@@ -68,11 +95,12 @@ export function activate(context) {
         vscode.window.showInformationMessage("Ouvrez un fichier .gift pour voir l'aperçu de l'examen.");
         return;
       }
-      preview.show(document, parseGift(document.getText()));
+      preview.show(document, getParsed(document));
     }),
   );
 
   vscode.workspace.textDocuments.forEach(update);
+  if (isGift(vscode.window.activeTextEditor?.document)) status.show(getParsed(vscode.window.activeTextEditor.document));
 }
 
 export function deactivate() {}
@@ -102,6 +130,40 @@ function provideCompletionItems(document, position, token, context) {
     if (item.retrigger) completion.command = { command: "editor.action.triggerSuggest", title: "" };
     return completion;
   });
+}
+
+// Vue « Structure », fil d'Ariane et Ctrl+Maj+O : une entree par question.
+function provideDocumentSymbols(document) {
+  return questionOutline(document.getText(), getParsed(document).questions).map((entry) => {
+    const range = new vscode.Range(entry.startLine, 0, entry.endLine, document.lineAt(entry.endLine).text.length);
+    const selection = document.lineAt(entry.selectionLine).range;
+    const name = entry.valid ? entry.name : `${entry.name} (à corriger)`;
+    return new vscode.DocumentSymbol(name, entry.detail, vscode.SymbolKind.Object, range, selection);
+  });
+}
+
+// Repli : chaque question et chaque bloc de code ```.
+function provideFoldingRanges(document) {
+  return foldingRanges(document.getText()).map((range) => new vscode.FoldingRange(range.startLine, range.endLine));
+}
+
+// Barre d'etat : nombre de questions, total des points et erreurs du fichier
+// GIFT actif. Un clic ouvre l'apercu.
+function createStatusBar() {
+  const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+  item.name = "GarneauHub GIFT";
+  item.command = "garneauhubGift.showPreview";
+  item.tooltip = "Ouvrir l'aperçu de l'examen";
+  return {
+    item,
+    show(parsed) {
+      item.text = `${parsed.errorCount ? "$(error)" : "$(checklist)"} ${statusSummary(parsed)}`;
+      item.show();
+    },
+    hide() {
+      item.hide();
+    },
+  };
 }
 
 // Commande « Ajouter une question » : les boutons « Ajouter » du site. Le

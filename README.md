@@ -6,6 +6,8 @@
 - **Modèles de questions** : en début de ligne, tapez un raccourci (`qcm`, `vf`, `texte`, `code`, `cloze`, `grille`, `glisser-texte`, `mcq`, `tfq`, `saq`, `mwq`…) puis Tab. La commande **GarneauHub GIFT : Ajouter une question** (bouton `+` en haut de l'éditeur) ajoute un modèle complet à la fin du fichier.
 - **Suggestions selon le curseur** (comme l'IntelliSense) : après `//`, les directives utiles à la question (`points`, `type`, `colonnes`…) ; après `// type:` ou `// notation:`, les valeurs offertes ; juste après `{`, les formes de réponses (`=`, `~`, `T`/`F`, `{:SA:}`, `{:MC:}`, ligne de grille). Ctrl+Espace ouvre la liste à tout moment.
 - **Erreurs soulignées** : les erreurs, avertissements et notes du site, dans le texte et dans l'onglet « Problèmes » (Ctrl+Maj+M).
+- **Structure** : chaque question apparaît dans la vue « Structure » et le fil d'Ariane, avec son type et ses points ; Ctrl+Maj+O pour sauter à une question. Chaque question et chaque bloc de code ``` se replient.
+- **Barre d'état** : en bas à gauche, le nombre de questions, le total des points et les erreurs du fichier (« 12 questions · 45 pts »). Un clic ouvre l'aperçu.
 - **Aperçu de l'examen** : Ctrl+Maj+V (ou le bouton en haut à droite de l'éditeur) ouvre l'aperçu à côté du texte : chaque question avec son type, ses points et ses bonnes réponses. Un clic sur « Question n » ou sur un problème place le curseur à la bonne ligne.
 
 La syntaxe est décrite dans [documentation/editeur-gift](../documentation/editeur-gift/README.md).
@@ -25,6 +27,7 @@ L'extension n'a **pas sa propre copie** du parseur : elle reprend le code de l'�
 | `package.json` | Description de l'extension pour VS Code : langage `gift`, commandes, raccourci, boutons |
 | `src/extension.js` | Point d'entrée : erreurs soulignées, modèles, commande « Ajouter une question », panneau d'aperçu |
 | `src/gift.js` | Ce que l'extension reprend du frontend |
+| `src/outline.js` | Blocs de questions : vue « Structure », repli et texte de la barre d'état |
 | `src/completions.js` | Quand proposer les modèles (pas dans `{ }` ni dans un bloc de code) |
 | `src/previewHtml.js` + `media/preview.css` | Page HTML de l'aperçu (couleurs du thème de VS Code) |
 | `scripts/grammar.mjs` | Écrit la coloration, `syntaxes/gift.tmLanguage.json` (ne pas modifier ce fichier à la main) |
