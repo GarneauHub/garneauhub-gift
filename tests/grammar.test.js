@@ -6,6 +6,11 @@ import { FENCE_GRAMMARS, grammar } from "../scripts/grammar.mjs";
 
 const readJson = (file) => JSON.parse(readFileSync(new URL(file, import.meta.url), "utf-8"));
 
+// VS Code (Oniguruma) comprend les groupes (?i:...), pas le RegExp de Node :
+// on les remplace par (?:...) avec le drapeau i (le reste du motif ne contient
+// pas de lettres sensibles a la casse).
+const toJsRegExp = (pattern) => new RegExp(pattern.replaceAll("(?i:", "(?:"), "i");
+
 describe("Grammaire GIFT", () => {
   it("syntaxes/gift.tmLanguage.json est a jour (npm run build)", () => {
     expect(readJson("../syntaxes/gift.tmLanguage.json")).toEqual(JSON.parse(JSON.stringify(grammar)));
@@ -24,7 +29,7 @@ describe("Grammaire GIFT", () => {
   });
 
   it("reconnait les directives de GarneauHub", () => {
-    const directive = new RegExp(grammar.repository.directive.patterns[0].match);
+    const directive = toJsRegExp(grammar.repository.directive.patterns[0].match);
 
     expect(directive.test("// points: 2")).toBe(true);
     expect(directive.test("// énoncé: Complétez le texte.")).toBe(true);
