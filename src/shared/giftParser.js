@@ -308,7 +308,9 @@ const newMeta = () => ({
   points: null, code: null, tests: [], solutions: [], starters: [], type: null, scoring: null, statement: null, columns: null, image: null, zones: [], errors: 0,
 });
 
-const isCodeMeta = (meta) => Boolean(meta.code || meta.tests.length || meta.solutions.length || meta.starters.length);
+const isCodeMeta = (meta) => Boolean(
+  meta.type?.base === "code" || meta.code || meta.tests.length || meta.solutions.length || meta.starters.length
+);
 
 // Directives d'une question de code -> champs de la question.
 // `fail(message, lineIndex)` et `warn(message, lineIndex)` signalent un
@@ -405,6 +407,25 @@ const PART_TYPE_DIRECTIVES = {
   "grille-multiple": { type: QUESTION_PART_TYPES.GRID, multiple: true },
   "glisser-texte": { type: QUESTION_PART_TYPES.DRAG_TEXT, multiple: false },
   "glisser-image": { type: QUESTION_PART_TYPES.DRAG_IMAGE, multiple: false },
+};
+// Les autres types s'annoncent aussi, pour que chaque question ait son type
+// (facultatif : sans « // type: », le type se deduit des reponses). Le type
+// annonce doit correspondre aux reponses.
+const BASE_TYPE_DIRECTIVES = {
+  "choix-multiples": "multiple_choice",
+  "vrai-faux": "true_false",
+  texte: "text",
+  code: "code",
+};
+const TYPE_ALIASES = { qcm: "choix-multiples", vf: "vrai-faux" };
+export const GIFT_TYPE_NAMES = [...Object.keys(BASE_TYPE_DIRECTIVES), ...Object.keys(PART_TYPE_DIRECTIVES)];
+// Type d'une question analysee -> valeur de « // type: ».
+const TYPE_DIRECTIVE_NAMES = {
+  ...Object.fromEntries(Object.entries(BASE_TYPE_DIRECTIVES).map(([name, type]) => [type, name])),
+  [QUESTION_PART_TYPES.CLOZE]: "cloze",
+  [QUESTION_PART_TYPES.GRID]: "grille",
+  [QUESTION_PART_TYPES.DRAG_TEXT]: "glisser-texte",
+  [QUESTION_PART_TYPES.DRAG_IMAGE]: "glisser-image",
 };
 const SCORING_DIRECTIVES = { partielle: SCORING.PARTIAL, "tout-ou-rien": SCORING.ALL_OR_NOTHING };
 const DEFAULT_STATEMENTS = {
@@ -854,6 +875,16 @@ export function parseGift(source, { prototypes = null } = {}) {
       addDiagnostic(severity, message, from.line, from.column, to.line, to.column);
     };
     const addQuestion = (question) => {
+      // « // type: » annonce un type, les reponses en donnent un autre.
+      const declared = meta.type && (meta.type.base || meta.type.type);
+      if (declared && question.type && question.type !== declared) {
+        errors++;
+        addLineDiagnostic(
+          GIFT_SEVERITY.ERROR,
+          `Les réponses sont celles d'une question « ${TYPE_DIRECTIVE_NAMES[question.type] || question.type} », pas « ${meta.type.name} » : corrigez « // type: » ou les réponses.`,
+          meta.type.lineIndex
+        );
+      }
       questions.push({
         ...question,
         points: meta.points?.value ?? GIFT_DEFAULT_POINTS,
@@ -868,9 +899,9 @@ export function parseGift(source, { prototypes = null } = {}) {
     const ignore = (entry, message) => {
       if (entry) addLineDiagnostic(GIFT_SEVERITY.WARNING, message, entry.lineIndex);
     };
-    if (partType && isCodeMeta(meta)) {
+    if (meta.type?.type && isCodeMeta(meta)) {
       errors++;
-      addLineDiagnostic(GIFT_SEVERITY.ERROR, "Une question de code n'a pas de « // type: ».", meta.type.lineIndex);
+      addLineDiagnostic(GIFT_SEVERITY.ERROR, "Les directives de code (« // code: », « // test: »…) servent seulement à « // type: code ».", meta.type.lineIndex);
     }
     if (partType !== QUESTION_PART_TYPES.GRID) {
       ignore(meta.columns, "Colonnes ignorées : « // colonnes: » sert seulement aux grilles (« // type: grille »).");
@@ -994,9 +1025,11 @@ export function parseGift(source, { prototypes = null } = {}) {
         continuation = test.code;
       }
     } else if (directive.name === "type") {
-      const type = PART_TYPE_DIRECTIVES[directive.value.toLowerCase()];
-      if (!type) fail(`Type « ${directive.value} » inconnu. Types offerts : ${Object.keys(PART_TYPE_DIRECTIVES).join(", ")}.`);
-      else meta.type = { ...type, lineIndex: index };
+      const value = directive.value.toLowerCase();
+      const name = TYPE_ALIASES[value] || value;
+      if (PART_TYPE_DIRECTIVES[name]) meta.type = { ...PART_TYPE_DIRECTIVES[name], name, lineIndex: index };
+      else if (BASE_TYPE_DIRECTIVES[name]) meta.type = { type: null, base: BASE_TYPE_DIRECTIVES[name], name, lineIndex: index };
+      else fail(`Type « ${directive.value} » inconnu. Types offerts : ${GIFT_TYPE_NAMES.join(", ")}.`);
     } else if (directive.name === "notation") {
       const scoring = SCORING_DIRECTIVES[directive.value.toLowerCase().replace(/\s+/g, "-")];
       if (!scoring) fail("Notation inconnue : écrivez « // notation: partielle » ou « // notation: tout-ou-rien ».");

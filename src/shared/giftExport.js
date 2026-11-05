@@ -47,7 +47,7 @@ export function getCodeFiles(question) {
 function codeQuestionToGift(question, prototypes) {
   const prototype = prototypes?.find((candidate) => candidate.id === question.prototype_id);
   const language = prototype?.name || DEFAULT_PROTOTYPE_NAME;
-  const lines = [`// code: ${language}`];
+  const lines = ["// type: code", `// code: ${language}`];
   const codeBlock = (text) => fenceBlock(text, language);
 
   const files = getCodeFiles(question);
@@ -87,8 +87,8 @@ const clozeBlankToGift = (blank) =>
 function partQuestionDirectives(question) {
   const details = question.details || {};
   const lines = [];
-  // Texte a trous : ses trous {:SA: } / {:MC: } suffisent, pas de « // type: ».
-  if (question.type === QUESTION_PART_TYPES.DRAG_TEXT) lines.push("// type: glisser-texte");
+  if (question.type === QUESTION_PART_TYPES.CLOZE) lines.push("// type: cloze");
+  else if (question.type === QUESTION_PART_TYPES.DRAG_TEXT) lines.push("// type: glisser-texte");
   else if (question.type === QUESTION_PART_TYPES.DRAG_IMAGE) {
     lines.push("// type: glisser-image", `// image: ${details.image}`);
     (details.zones || []).forEach((zone) => lines.push(`// zone: ${zone.x}, ${zone.y} => ${zone.answer}`));
@@ -134,14 +134,17 @@ export function questionsToGift(questions, prototypes = null) {
     } else if (question.type === "code") {
       lines.push(...codeQuestionToGift(question, prototypes));
     } else if (question.type === "true_false") {
+      lines.push("// type: vrai-faux");
       answers = (question.correct_answer || "").toLowerCase() === "vrai" ? "{T}" : "{F}";
     } else if (question.type === "multiple_choice") {
+      lines.push("// type: choix-multiples");
       const choices = (question.choices || []).map(
         (choice) => `\t${choice.is_correct ? "=" : "~"}${escapeGift(choice.label)}`
       );
       answers = `{\n${choices.join("\n")}\n}`;
-    } else if ((question.correct_answer || "").trim()) {
-      answers = `{=${escapeGift(question.correct_answer.trim())}}`;
+    } else {
+      lines.push("// type: texte");
+      if ((question.correct_answer || "").trim()) answers = `{=${escapeGift(question.correct_answer.trim())}}`;
     }
     return `${lines.join("\n")}\n${label} ${answers}`;
   });

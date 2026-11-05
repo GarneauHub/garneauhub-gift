@@ -1,20 +1,25 @@
 // Exemple : une question de chaque type. Les questions sont separees par une
-// ligne vide ; « // points: » se met juste avant la question (1 point par defaut).
+// ligne vide ; « // points: » (1 point par defaut) et « // type: » se mettent
+// juste avant la question.
 // Syntaxe complete : documentation/editeur-gift/README.md
 
 // points: 2
+// type: choix-multiples
 ::Réseau 1:: Quel protocole est orienté connexion ? {
 	=TCP
 	~UDP
 	~ICMP
 }
 
+// type: vrai-faux
 La Terre est ronde. {T}
 
 // points: 2
+// type: texte
 Quelle commande affiche la configuration IP sous Windows ? {=ipconfig}
 
 // points: 5
+// type: code
 // code: python3
 // solution:
 //   def somme(a, b):
@@ -27,6 +32,7 @@ Quelle commande affiche la configuration IP sous Windows ? {=ipconfig}
 Écrivez une fonction somme(a, b) qui retourne la somme de a et b. {}
 
 // points: 3
+// type: cloze
 // énoncé: Complétez avec les notions du cours 3.
 La couche 1 du modèle OSI est la couche {:SA: Physique}.
 Le protocole {:MC: =TCP ~UDP ~ICMP} est orienté connexion.

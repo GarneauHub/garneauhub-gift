@@ -5,7 +5,7 @@
 // questions (giftSnippets.js). Partage par le site (giftMonaco.js) et
 // l'extension VS Code (garneauhub-giftformat) : memes suggestions partout.
 import { findFence } from "./giftCodeAssist.js";
-import { GIFT_COMPLETION_SNIPPETS, renderSnippet } from "./giftSnippets.js";
+import { GIFT_COMPLETION_SNIPPETS, GIFT_QUESTION_TYPES, renderSnippet } from "./giftSnippets.js";
 
 // Caracteres qui ouvrent la liste sans Ctrl+Espace. Une suggestion n'est
 // offerte apres eux que dans une directive ou un bloc de reponses : jamais en
@@ -13,7 +13,9 @@ import { GIFT_COMPLETION_SNIPPETS, renderSnippet } from "./giftSnippets.js";
 export const GIFT_TRIGGER_CHARACTERS = ["/", " ", ":", "{"];
 
 // Types de questions annonces par « // type: » (memes cles que
-// PART_TYPE_DIRECTIVES, giftParser.js).
+// BASE_TYPE_DIRECTIVES et PART_TYPE_DIRECTIVES, giftParser.js).
+const QUESTION_TYPES = GIFT_QUESTION_TYPES.map((entry) => entry.type);
+const TYPE_ALIASES = { qcm: "choix-multiples", vf: "vrai-faux" };
 const PART_TYPES = ["cloze", "grille", "grille-multiple", "glisser-texte", "glisser-image"];
 const GRID_TYPES = ["grille", "grille-multiple"];
 const DRAG_TYPES = ["glisser-texte", "glisser-image"];
@@ -32,9 +34,8 @@ const DIRECTIVES = [
   {
     name: "type",
     once: true,
-    for: PART_TYPES,
     detail: "Type de question",
-    documentation: "Texte à trous, grille ou glisser-déposer. Inutile pour les choix multiples, le vrai / faux, la réponse texte et le code.",
+    documentation: `Le type de la question : ${QUESTION_TYPES.map((type) => `\`${type}\``).join(", ")}. Dans une question vide, choisir le type écrit son modèle.\n\n\`\`\`gift\n// type: choix-multiples\n\`\`\``,
     insertText: "type: ",
     retrigger: true,
   },
@@ -110,13 +111,13 @@ const DIRECTIVES = [
   },
 ];
 
-const TYPE_VALUES = [
-  { value: "cloze", detail: "Texte à trous", documentation: "Des trous {:SA: réponse} ou {:MC: =bonne ~mauvaise} dans le texte. Facultatif : un trou suffit à faire un texte à trous." },
-  { value: "grille", detail: "Grille, une colonne par ligne (boutons radio)", documentation: "Une ligne « =Élément -> Colonne » par bonne réponse." },
-  { value: "grille-multiple", detail: "Grille, plusieurs colonnes par ligne (cases à cocher)", documentation: "Une ligne répétée ajoute une bonne colonne." },
-  { value: "glisser-texte", detail: "Glisser-déposer sur texte", documentation: "Les étiquettes attendues entre [[ ]] dans le texte, les intrus (~) dans le bloc { } final." },
-  { value: "glisser-image", detail: "Glisser-déposer sur image", documentation: "Une image (« // image: ») et ses zones (« // zone: x, y => étiquette »)." },
-];
+// Valeurs de « // type: » : une par type de question, avec son modele.
+const TYPE_VALUES = GIFT_QUESTION_TYPES.map((entry) => ({
+  value: entry.type,
+  detail: entry.label,
+  documentation: entry.description,
+  template: entry.template,
+}));
 
 const SCORING_VALUES = [
   { value: "partielle", detail: "Points répartis (par défaut)", documentation: "Chaque trou ou ligne juste rapporte sa part des points." },
@@ -146,11 +147,13 @@ function questionDirectives(lines, lineIndex) {
   return directives;
 }
 
-// Type de la question : une valeur de PART_TYPES, « code » ou null (pas
+// Type de la question : une valeur de QUESTION_TYPES (« code » aussi pour
+// une question avec des directives de code) ou null (pas
 // encore connu).
 function questionKind(directives) {
-  const type = directives.get("type")?.toLowerCase();
-  if (PART_TYPES.includes(type)) return type;
+  const value = directives.get("type")?.toLowerCase();
+  const type = TYPE_ALIASES[value] || value;
+  if (QUESTION_TYPES.includes(type)) return type;
   if (["code", "test", "solution", "starter"].some((key) => directives.has(key))) return "code";
   return null;
 }
@@ -195,6 +198,36 @@ const valueItems = (values) => values.map(({ value, detail, documentation }) => 
   kind: "value", label: value, filterText: value, detail, documentation, insertText: value,
 }));
 
+// La question du curseur est-elle encore vide (seulement des « // points: »
+// autour de la ligne « // type: ») ? Choisir un type y ecrit alors son modele.
+function isEmptyQuestion(lines, lineIndex) {
+  let first = lineIndex;
+  while (first > 0 && lines[first - 1].trim()) first--;
+  let last = lineIndex;
+  while (last < lines.length - 1 && lines[last + 1].trim()) last++;
+  for (let index = first; index <= last; index++) {
+    if (index !== lineIndex && !/^\s*\/\/ ?points?[ \t]*[:=]/i.test(lines[index])) return false;
+  }
+  return true;
+}
+
+// Valeurs de « // type: ». En fin de ligne d'une question vide, chacune
+// ajoute le modele de son type sous la ligne.
+function typeItems(lines, lineIndex, character) {
+  const withTemplate = !lines[lineIndex].slice(character).trim() && isEmptyQuestion(lines, lineIndex);
+  return TYPE_VALUES.map(({ value, detail, documentation, template }) => {
+    const insertText = withTemplate ? `${value}\n${template.replace(/\n$/, "")}` : value;
+    return {
+      kind: "value",
+      label: value,
+      filterText: value,
+      detail: withTemplate ? `${detail} (modèle)` : detail,
+      documentation: withTemplate ? `${documentation}\n\n\`\`\`gift\n// type: ${renderSnippet(insertText)}\n\`\`\`` : documentation,
+      insertText,
+    };
+  });
+}
+
 // Formes de reponses offertes dans un bloc { }. `inside` : le texte du bloc
 // avant le curseur ; `firstLine` : le curseur est sur la ligne de « { ».
 function answerItems(kind, inside, firstLine) {
@@ -205,8 +238,15 @@ function answerItems(kind, inside, firstLine) {
   }
   const gridLine = answer("= ->", "Ligne de grille : élément et sa colonne", "=${1:Élément} -> ${2:Colonne}");
   if (GRID_TYPES.includes(kind) || inside.includes("->")) return [gridLine];
-  if (inside.trim()) return [answer("=", "Bonne réponse", "=${1:Bonne réponse}"), wrong];
   const lines = (body) => (firstLine ? `\n\t${body.join("\n\t")}\n` : body.join("\n\t"));
+  // Type annonce : seulement les reponses de ce type.
+  if (kind === "code") return [];
+  if (kind === "vrai-faux") return inside.trim() ? [] : [answer("T", "Vrai", "T"), answer("F", "Faux", "F")];
+  if (kind === "texte") return inside.trim() ? [] : [answer("=", "Réponse attendue", "=${1:Réponse attendue}")];
+  if (kind === "choix-multiples" && !inside.trim()) {
+    return [answer("= ~ ~", "Choix multiples", lines(["=${1:Bonne réponse}", "~${2:Mauvaise réponse}", "~${3:Mauvaise réponse}"]), "Une bonne réponse (=) et des mauvaises (~)."), wrong];
+  }
+  if (inside.trim()) return [answer("=", "Bonne réponse", "=${1:Bonne réponse}"), wrong];
   return [
     answer("= ~ ~", "Choix multiples", lines(["=${1:Bonne réponse}", "~${2:Mauvaise réponse}", "~${3:Mauvaise réponse}"]), "Une bonne réponse (=) et des mauvaises (~)."),
     answer("T", "Vrai", "T"),
@@ -260,7 +300,7 @@ export function getGiftCompletions(lines, lineIndex, character, { prototypes = n
   if (value) {
     const key = directiveKey(value[2]);
     const from = character - value[3].length;
-    if (key === "type") return { from, items: valueItems(TYPE_VALUES) };
+    if (key === "type") return { from, items: typeItems(lines, lineIndex, character) };
     if (key === "notation") return { from, items: valueItems(SCORING_VALUES) };
     if (key === "code" && prototypes?.length) {
       return { from, items: valueItems(prototypes.map((prototype) => ({ value: prototype.name, detail: "Langage", documentation: "" }))) };
