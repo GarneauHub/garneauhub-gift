@@ -1,12 +1,12 @@
 // Ecrit syntaxes/gift.tmLanguage.json, la coloration de VS Code (grammaire
 // TextMate). Memes regles que le langage Monaco du site
-// (frontend/src/utils/giftMonaco.js). Lance par « npm run build ».
+// (giftMonaco.js du site, frontend/src/utils). Lance par « npm run build ».
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 // Blocs de code Markdown : memes noms que FENCE_LANGUAGES
-// (frontend/src/utils/giftCodeAssist.js). `id` : langage de VS Code (voir
+// (src/shared/giftCodeAssist.js). `id` : langage de VS Code (voir
 // embeddedLanguages dans package.json), `scope` : sa grammaire.
 export const FENCE_GRAMMARS = [
   { id: "python", names: ["python", "python3", "py"], scope: "source.python" },
@@ -23,7 +23,7 @@ export const FENCE_GRAMMARS = [
 
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-// Meme liste que DIRECTIVE (frontend/src/utils/giftParser.js).
+// Meme liste que DIRECTIVE (src/shared/giftParser.js).
 const DIRECTIVE_NAMES = String.raw`points?|code|test|solution|starter|type|notation|colonnes|image|zone|[ée]nonc[ée]`;
 
 // La fermeture reprend le caractere de l'ouverture (``` ou ~~~), au moins

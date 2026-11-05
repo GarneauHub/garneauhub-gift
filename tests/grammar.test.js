@@ -1,7 +1,7 @@
 // Coloration (grammaire TextMate) : a jour avec son script et avec le site.
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { FENCE_LANGUAGES } from "../../frontend/src/utils/giftCodeAssist.js";
+import { FENCE_LANGUAGES } from "../src/shared/giftCodeAssist.js";
 import { FENCE_GRAMMARS, grammar } from "../scripts/grammar.mjs";
 
 const readJson = (file) => JSON.parse(readFileSync(new URL(file, import.meta.url), "utf-8"));

@@ -10,7 +10,7 @@
 - **Barre d'état** : en bas à gauche, le nombre de questions, le total des points et les erreurs du fichier (« 12 questions · 45 pts »). Un clic ouvre l'aperçu.
 - **Aperçu de l'examen** : Ctrl+Maj+V (ou le bouton en haut à droite de l'éditeur) ouvre l'aperçu à côté du texte : chaque question avec son type, ses points et ses bonnes réponses. Un clic sur « Question n » ou sur un problème place le curseur à la bonne ligne.
 
-La syntaxe est décrite dans [documentation/editeur-gift](../documentation/editeur-gift/README.md).
+La syntaxe est décrite dans [documentation/editeur-gift](https://github.com/GarneauHub/GarneauHub/tree/main/documentation/editeur-gift) du repo GarneauHub.
 
 Différences avec le site :
 
@@ -20,13 +20,18 @@ Différences avec le site :
 
 ## Comment ça marche
 
-L'extension n'a **pas sa propre copie** du parseur : elle reprend le code de l'éditeur GIFT du site (`frontend/src/utils/giftParser.js`, `giftSnippets.js`, `questionParts.js`…). Au build, [esbuild](https://esbuild.github.io/) réunit ce code et celui de l'extension dans un seul fichier, `dist/extension.js`. Une règle changée sur le site est donc dans l'extension au prochain build.
+L'extension lit le GIFT avec le même parseur que l'éditeur GIFT du site. `src/shared/` est une **copie** des fichiers `frontend/src/utils/` du [repo GarneauHub](https://github.com/GarneauHub/GarneauHub) (`giftParser.js`, `giftSnippets.js`, `questionParts.js`…). Au build, [esbuild](https://esbuild.github.io/) réunit ce code et celui de l'extension dans un seul fichier, `dist/extension.js`.
+
+**Garder la copie à jour** : quand le parseur change sur le site, recopiez les fichiers ci-dessous de `frontend/src/utils/` vers `src/shared/` (sans les modifier ici), puis lancez `npm test` :
+
+`examUtils.js`, `examValidation.js`, `giftCodeAssist.js`, `giftCompletions.js`, `giftExport.js`, `giftParser.js`, `giftSnippets.js`, `questionFiles.js`, `questionParts.js`
 
 | Fichier | Rôle |
 |---|---|
 | `package.json` | Description de l'extension pour VS Code : langage `gift`, commandes, raccourci, boutons |
 | `src/extension.js` | Point d'entrée : erreurs soulignées, modèles, commande « Ajouter une question », panneau d'aperçu |
-| `src/gift.js` | Ce que l'extension reprend du frontend |
+| `src/gift.js` | Ce que l'extension reprend du parseur du site |
+| `src/shared/` | Copie du parseur GIFT du site (ne pas modifier ici) |
 | `src/outline.js` | Blocs de questions : vue « Structure », repli et texte de la barre d'état |
 | `src/completions.js` | Quand proposer les modèles (pas dans `{ }` ni dans un bloc de code) |
 | `src/previewHtml.js` + `media/preview.css` | Page HTML de l'aperçu (couleurs du thème de VS Code) |
@@ -36,16 +41,15 @@ L'extension n'a **pas sa propre copie** du parseur : elle reprend le code de l'�
 
 ## Développer
 
-Prérequis : Node.js 18 ou plus. Le frontend n'a pas besoin d'être installé.
+Prérequis : Node.js 18 ou plus.
 
 ```bash
-cd garneauhub-giftformat
 npm install
 npm run build    # coloration + dist/extension.js
 npm test         # tests (vitest)
 ```
 
-**Essayer l'extension** : ouvrez le dossier `garneauhub-giftformat` dans VS Code et appuyez sur **F5**. Une deuxième fenêtre de VS Code s'ouvre avec l'extension chargée et le dossier `examples/`. Ouvrez `exemple.gift`. Après une modification du code, relancez avec Ctrl+Maj+F5. Pendant le développement, `npm run watch` refait le build à chaque sauvegarde.
+**Essayer l'extension** : ouvrez ce dossier dans VS Code et appuyez sur **F5**. Une deuxième fenêtre de VS Code s'ouvre avec l'extension chargée et le dossier `examples/`. Ouvrez `exemple.gift`. Après une modification du code, relancez avec Ctrl+Maj+F5. Pendant le développement, `npm run watch` refait le build à chaque sauvegarde.
 
 ## Installer sans F5
 

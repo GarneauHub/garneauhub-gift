@@ -8,8 +8,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/GarneauHub/GarneauHub.git",
-    "directory": "garneauhub-giftformat"
+    "url": "https://github.com/GarneauHub/garneauhub-gift.git"
   },
   "engines": {
     "vscode": "^1.90.0"

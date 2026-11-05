@@ -1,0 +1,28 @@
+# Tests, build et paquet .vsix de l'extension a chaque push et pull request.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run package -- --out garneauhub-gift.vsix
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: garneauhub-gift-vsix
+          path: garneauhub-gift.vsix
