@@ -30,6 +30,13 @@ describe("Apercu de l'examen", () => {
     expect(html).toContain("Notation partielle");
   });
 
+  it("montre toutes les options d'un menu et les autres réponses acceptées", () => {
+    const html = render("Le protocole {:MC: ~UDP =TCP ~ICMP} est fiable. La boucle locale est {:SA: 127.0.0.1 | localhost}.");
+
+    expect(html).toContain('<span class="option">UDP</span><span class="blank">TCP</span><span class="visually-hidden"> (bonne réponse)</span><span class="option">ICMP</span>');
+    expect(html).toContain('<span class="blank">127.0.0.1</span><span class="alternatives"> ou <span class="option">localhost</span></span>');
+  });
+
   it("coche les bonnes colonnes d'une grille", () => {
     const html = render("// type: grille\n// colonnes: Physique | Réseau\nCouche ? {\n\t=Routeur -> Réseau\n\t=Modem -> Physique\n}");
 

@@ -55,9 +55,28 @@ function renderChoices(question) {
     </li>`).join("")}</ul>`;
 }
 
+// Trou d'un texte a trous : un menu {:MC:} montre toutes ses options, dans
+// l'ordre, la bonne mise en evidence ; une reponse courte {:SA:} montre la
+// reponse attendue puis les autres reponses acceptees.
+const CORRECT_NOTE = '<span class="visually-hidden"> (bonne réponse)</span>';
+function renderClozeBlank(blank) {
+  if (blank?.kind === "choice") {
+    const options = blank.options.map((option) => (option.is_correct
+      ? `<span class="blank">${escapeHtml(option.label)}</span>${CORRECT_NOTE}`
+      : `<span class="option">${escapeHtml(option.label)}</span>`));
+    return `<span class="blank-menu" title="Menu déroulant">${options.join("")}</span>`;
+  }
+  const [answer = "", ...others] = blank?.answers || [];
+  const alternatives = others.length
+    ? `<span class="alternatives"> ou ${others.map((other) => `<span class="option">${escapeHtml(other)}</span>`).join(" ou ")}</span>`
+    : "";
+  return `<span class="blank">${escapeHtml(answer)}</span>${alternatives}`;
+}
+
 function renderCloze(question) {
-  const answers = getCorrectPartsAnswer(question.type, question.details);
-  return `<p class="parts-text">${fillBlanks(question.details?.text || "", answers)}</p>${scoringHint(question)}`;
+  const blanks = question.details?.blanks || [];
+  const text = escapeHtml(question.details?.text || "").replace(/\[\[(\d+)\]\]/g, (match, number) => renderClozeBlank(blanks[Number(number) - 1]));
+  return `<p class="parts-text">${text}</p>${scoringHint(question)}`;
 }
 
 function renderGrid(question) {

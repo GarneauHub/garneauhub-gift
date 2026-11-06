@@ -144,6 +144,23 @@ button.problem:hover {
   border-color: var(--vscode-panel-border);
 }
 
+/* Menu d'un texte a trous : toutes les options, la bonne en vert. */
+.blank-menu {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  vertical-align: baseline;
+}
+
+.option {
+  display: inline-block;
+  border: 1px dashed var(--vscode-panel-border);
+  border-radius: 4px;
+  padding: 0 6px;
+  margin: 1px 0;
+  color: var(--vscode-descriptionForeground);
+}
+
 .grid {
   border-collapse: collapse;
   margin: 4px 0;

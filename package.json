@@ -2,7 +2,7 @@
   "name": "garneauhub-giftformat",
   "displayName": "GarneauHub GIFT",
   "description": "Format GIFT de GarneauHub : coloration, modèles de questions, erreurs soulignées et aperçu de l'examen, comme l'éditeur GIFT du site.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "garneauhub",
   "license": "UNLICENSED",
   "private": true,
