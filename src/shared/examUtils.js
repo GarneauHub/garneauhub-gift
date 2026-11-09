@@ -70,7 +70,9 @@ export function formatDate(dateValue) {
 
 export const canPublishExam = (exam) => Boolean(exam?.actions?.canPublish);
 export const canTerminateExam = (exam) => Boolean(exam?.actions?.canTerminate);
-export const canCorrectExam = (exam) => Boolean(exam?.actions?.canCorrect && exam?.status === "completed");
+// Publie : on corrige deja les copies remises pendant que d'autres groupes ecrivent.
+export const canCorrectExam = (exam) =>
+  Boolean(exam?.actions?.canCorrect && ["published", "completed"].includes(exam?.status));
 export const canPublishExamResults = (exam) => Boolean(exam?.actions?.canPublishResults && exam?.status === "graded");
 
 export function areResultsPublished(exam) {

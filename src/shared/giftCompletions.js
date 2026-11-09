@@ -32,6 +32,13 @@ const DIRECTIVES = [
     insertText: "points: ${1:2}",
   },
   {
+    name: "version",
+    once: true,
+    detail: "Version de l'examen",
+    documentation: "Une lettre : la question n'est vue que par les groupes de cette version. Sans cette ligne, la question est commune à tous les groupes.\n\n```gift\n// version: A\n```",
+    insertText: "version: ${1:A}",
+  },
+  {
     name: "type",
     once: true,
     detail: "Type de question",

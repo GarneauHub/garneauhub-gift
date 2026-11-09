@@ -16,6 +16,8 @@
 //     de validation que le serveur ;
 //   - le texte a trous et la grille (#156), annonces par « // type: » : voir
 //     « Texte a trous et grille » plus bas ;
+//   - la version de l'examen, « // version: A » avant la question (sans
+//     cette ligne, la question est commune a toutes les versions) ;
 //   - des messages en francais, places au bon endroit dans le document.
 import { parser as giftSyntaxParser } from "gift-parser-ide";
 import { getOptionLabelError, getQuestionLabelError } from "./examValidation.js";
@@ -273,7 +275,7 @@ function toExamQuestion(node, parts, report, isCode) {
 //   def perimetre_rectangle(largeur, hauteur):
 //       pass
 //   ```
-const DIRECTIVE =/^(points?|code|test|solution|starter|type|notation|colonnes|image|zone|[ée]nonc[ée])(?:[ \t]+([^\s:=]+))?[ \t]*[:=][ \t]*(.*)$/i;
+const DIRECTIVE =/^(points?|version|code|test|solution|starter|type|notation|colonnes|image|zone|[ée]nonc[ée])(?:[ \t]+([^\s:=]+))?[ \t]*[:=][ \t]*(.*)$/i;
 
 // Une directive suit « // » d'au plus une espace ; les lignes de contenu sont
 // plus indentees, et ne sont donc jamais prises pour des directives.
@@ -305,7 +307,7 @@ export const closesFence = (trimmedLine, marker) =>
   /^(`{3,}|~{3,})$/.test(trimmedLine) && trimmedLine[0] === marker[0] && trimmedLine.length >= marker.length;
 
 const newMeta = () => ({
-  points: null, code: null, tests: [], solutions: [], starters: [], type: null, scoring: null, statement: null, columns: null, image: null, zones: [], errors: 0,
+  points: null, version: null, code: null, tests: [], solutions: [], starters: [], type: null, scoring: null, statement: null, columns: null, image: null, zones: [], errors: 0,
 });
 
 const isCodeMeta = (meta) => Boolean(
@@ -827,7 +829,8 @@ function toDragImageQuestion(text, report, meta, failLine) {
 //                 elle contient une erreur (elle n'est alors pas enregistrable).
 //   diagnostics : { severity, message, startLine, startColumn, endLine,
 //                 endColumn } (lignes et colonnes a partir de 1, comme Monaco).
-export function parseGift(source, { prototypes = null } = {}) {
+// allowVersions : false dans la banque de questions, qui n'a pas de versions.
+export function parseGift(source, { prototypes = null, allowVersions = true } = {}) {
   const lines = (source || "").replace(/\r\n?/g, "\n").split("\n");
   const diagnostics = [];
   const questions = [];
@@ -888,6 +891,7 @@ export function parseGift(source, { prototypes = null } = {}) {
       questions.push({
         ...question,
         points: meta.points?.value ?? GIFT_DEFAULT_POINTS,
+        version: meta.version?.value ?? null,
         line: lineIndexes[0] + 1,
         valid: errors === 0 && question.type !== null,
       });
@@ -1000,6 +1004,16 @@ export function parseGift(source, { prototypes = null } = {}) {
       const value = Number(directive.value.replace(",", "."));
       if (!Number.isInteger(value) || value <= 0) fail("Les points doivent être un entier positif, par exemple « // points: 2 ».");
       else if (!block || !meta.points) meta.points = { value, lineIndex: index };
+    } else if (directive.name === "version") {
+      // A, B, C ou D (comme le serveur) ; vide = question commune a toutes les versions.
+      const value = directive.value.trim().toUpperCase();
+      if (!allowVersions) {
+        addLineDiagnostic(GIFT_SEVERITY.WARNING, "La banque de questions n'a pas de versions : cette ligne est ignorée.", index);
+      } else if (value && !/^[A-D]$/.test(value)) {
+        fail("La version est A, B, C ou D, par exemple « // version: A ». Sans cette ligne, la question est commune.");
+      } else if (!block || !meta.version) {
+        meta.version = { value: value || null, lineIndex: index };
+      }
     } else if (directive.name === "code") {
       if (!directive.value) fail("Indiquez le langage, par exemple « // code: python3 ».");
       else meta.code = { name: directive.value, lineIndex: index };
@@ -1112,7 +1126,7 @@ export function parseGift(source, { prototypes = null } = {}) {
 
   // Directives en fin de document, sans question apres elles.
   const orphans = [
-    pending.points, pending.code, pending.type, pending.scoring, pending.columns, pending.image, ...pending.zones,
+    pending.points, pending.version, pending.code, pending.type, pending.scoring, pending.columns, pending.image, ...pending.zones,
     ...pending.tests, ...pending.solutions, ...pending.starters,
   ].filter(Boolean);
   if (orphans.length && !fence) {
@@ -1131,6 +1145,9 @@ export function toQuestionPayload(question, prototypes = null) {
     points: question.points,
     correct_answer: question.correct_answer,
   };
+  // Version de l'examen : envoyee seulement si la question en a une.
+  // L'editeur GIFT recree toutes les questions : sans « // version: », elle est commune.
+  if (question.version) payload.version = question.version;
   if (question.type === "multiple_choice") {
     payload.choices = question.choices.map((choice) => ({ label: choice.label, is_correct: choice.is_correct }));
   }

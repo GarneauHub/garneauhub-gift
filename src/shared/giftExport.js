@@ -108,6 +108,8 @@ export function questionsToGift(questions, prototypes = null) {
   const blocks = (questions || []).map((question) => {
     let label = escapeGift(question.label);
     const lines = [`// points: ${question.points || GIFT_DEFAULT_POINTS}`];
+    // Version de l'examen : rien pour une question commune.
+    if (question.version) lines.unshift(`// version: ${question.version}`);
     let answers = "{}";
     if (isPartQuestionType(question.type)) lines.push(...partQuestionDirectives(question));
     if (question.type === QUESTION_PART_TYPES.CLOZE) {
